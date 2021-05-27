@@ -1,10 +1,9 @@
 package com.udacity.security.data;
 
 
-import com.google.common.collect.ComparisonChain;
-
 import java.util.Objects;
 import java.util.UUID;
+import com.google.common.collect.ComparisonChain;
 
 /**
  * Sensor POJO. Needs to know how to sort itself for display purposes.
