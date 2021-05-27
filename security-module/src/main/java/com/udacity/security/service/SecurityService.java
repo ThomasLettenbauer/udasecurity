@@ -1,10 +1,10 @@
-package com.udacity.catpoint.service;
+package com.udacity.security.service;
 
-import com.udacity.catpoint.application.StatusListener;
-import com.udacity.catpoint.data.AlarmStatus;
-import com.udacity.catpoint.data.ArmingStatus;
-import com.udacity.catpoint.data.SecurityRepository;
-import com.udacity.catpoint.data.Sensor;
+import com.udacity.image.service.FakeImageService;
+import com.udacity.security.data.AlarmStatus;
+import com.udacity.security.data.ArmingStatus;
+import com.udacity.security.data.SecurityRepository;
+import com.udacity.security.data.Sensor;
 
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
@@ -84,8 +84,8 @@ public class SecurityService {
             return; //no problem if the system is disarmed
         }
         switch(securityRepository.getAlarmStatus()) {
-            case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
-            case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
+            case AlarmStatus.NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
+            case AlarmStatus.PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
         }
     }
 
@@ -94,8 +94,8 @@ public class SecurityService {
      */
     private void handleSensorDeactivated() {
         switch(securityRepository.getAlarmStatus()) {
-            case PENDING_ALARM -> setAlarmStatus(AlarmStatus.NO_ALARM);
-            case ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
+            case AlarmStatus.PENDING_ALARM -> setAlarmStatus(AlarmStatus.NO_ALARM);
+            case AlarmStatus.ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
         }
     }
 
