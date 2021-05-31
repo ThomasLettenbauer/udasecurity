@@ -1,6 +1,8 @@
 package com.udacity.security.data;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.InstanceCreator;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -27,10 +29,22 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
     private static final Preferences prefs = Preferences.userNodeForPackage(PretendDatabaseSecurityRepositoryImpl.class);
     private static final Gson gson = new Gson(); //used to serialize objects into JSON
 
+    class SensorCreator implements InstanceCreator {
+        @Override
+        public Sensor createInstance(Type type) {
+            Sensor sensor = new Sensor("Sensor", SensorType.DOOR);
+            return sensor;
+        }
+    }
+
     public PretendDatabaseSecurityRepositoryImpl() {
         //load system state from prefs, or else default
         alarmStatus = AlarmStatus.valueOf(prefs.get(ALARM_STATUS, AlarmStatus.NO_ALARM.toString()));
         armingStatus = ArmingStatus.valueOf(prefs.get(ARMING_STATUS, ArmingStatus.DISARMED.toString()));
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Sensor.class, new SensorCreator());
+        Gson gson = gsonBuilder.create();
 
         //we've serialized our sensor objects for storage, which should be a good warning sign that
         // this is likely an impractical solution for a real system
