@@ -8,4 +8,5 @@ module com.udacity.security.module {
     exports com.udacity.security.service;
     exports com.udacity.security.data;
     opens com.udacity.security.data;
+    opens com.udacity.security.service;
 }
