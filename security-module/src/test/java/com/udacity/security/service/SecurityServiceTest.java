@@ -42,6 +42,9 @@ class SecurityServiceTest {
     @Mock
     private ImageService imageService;
 
+    @Mock
+    private StatusListener statusListener;
+
     SecurityServiceTest() throws IOException {
     }
 
@@ -51,8 +54,9 @@ class SecurityServiceTest {
         sensor = new Sensor("TestMotionSensor", SensorType.MOTION);
         securityService.addSensor(sensor);
         allSensors.add(sensor);
+        StatusListener statusListener = Mockito.mock(StatusListener.class);
+        securityService.addStatusListener(statusListener);
     }
-
 
     // 1. If alarm is armed and a sensor becomes activated, put the system into pending alarm status
     @ParameterizedTest
@@ -165,6 +169,32 @@ class SecurityServiceTest {
         Mockito.verify(securityRepository).setAlarmStatus(AlarmStatus.ALARM);
     }
 
+    // Coverage 1. Get the alarm status
+    @ParameterizedTest
+    @EnumSource(value = AlarmStatus.class, names = {"PENDING_ALARM", "NO_ALARM", "ALARM"})
+    public void cov_1_getTheAlarmStatus (AlarmStatus alarmStatus) {
+        Mockito.when(securityRepository.getAlarmStatus()).thenReturn(alarmStatus);
+        Assertions.assertEquals(alarmStatus, securityService.getAlarmStatus());
+    }
 
+    // Coverage 2. Remove sensor
+    @Test
+    public void cov_2_removeSensor () {
+        securityService.removeSensor(sensor);
+        Mockito.verify(securityRepository).removeSensor(sensor);
+    }
+
+    // Coverage 3. Sensor active and system disarmed
+    @Test
+    public void cov_3_sensorActiveAndSystemDisarmed_doNothing () {
+        Mockito.when(securityRepository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+        securityService.changeSensorActivationStatus(sensor,true);
+        Mockito.verify(securityRepository, Mockito.never()).setAlarmStatus(Mockito.any(AlarmStatus.class));
+    }
+
+    @Test
+    public void cov_4_removeStatusListener () {
+        securityService.removeStatusListener(statusListener);
+    }
 
 }
