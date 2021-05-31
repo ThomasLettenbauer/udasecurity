@@ -151,7 +151,7 @@ class SecurityServiceTest {
     @ParameterizedTest
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME","ARMED_AWAY"})
     public void test_10_ifSystemIsArmed_resetSensorsToInactive (ArmingStatus armingStatus) {
-        Mockito.when(securityRepository.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
+        //Mockito.when(securityRepository.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
         Mockito.when(securityRepository.getSensors()).thenReturn(allSensors);
         sensor.setActive(true);
         securityService.setArmingStatus(armingStatus);

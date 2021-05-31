@@ -9,7 +9,9 @@ import com.udacity.security.data.Sensor;
 
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Service that receives information about changes to the security system. Responsible for
@@ -39,13 +41,15 @@ public class SecurityService {
             setAlarmStatus(AlarmStatus.NO_ALARM);
         } else if (armingStatus == ArmingStatus.ARMED_AWAY || armingStatus == ArmingStatus.ARMED_HOME) {
             Set<Sensor> allSensors = getSensors();
-            for (Sensor sensor : allSensors) {
-                changeSensorActivationStatus(sensor, false);
+            // inactivate all sensors
+
+            for (Iterator<Sensor> sensorIterator = allSensors.iterator(); sensorIterator.hasNext();) {
+                Sensor sensor = sensorIterator.next();
+                sensor.setActive(false);
+                }
             }
-        }
 
-        //securityRepository.setArmingStatus(armingStatus);
-
+        securityRepository.setArmingStatus(armingStatus);
 
     }
 
