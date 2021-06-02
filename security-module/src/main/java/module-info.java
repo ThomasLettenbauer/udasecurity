@@ -7,6 +7,5 @@ module com.udacity.security.module {
     requires com.google.gson;
     exports com.udacity.security.service;
     exports com.udacity.security.data;
-    opens com.udacity.security.data;
-    opens com.udacity.security.service;
+    opens com.udacity.security.data to com.google.gson;
 }

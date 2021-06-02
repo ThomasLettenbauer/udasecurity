@@ -23,6 +23,10 @@ public class SensorPanel extends JPanel {
     private JComboBox newSensorTypeDropdown = new JComboBox(SensorType.values());
     private JButton addNewSensorButton = new JButton("Add New Sensor");
 
+    public JPanel getSensorListPanel() {
+        return sensorListPanel;
+    }
+
     private JPanel sensorListPanel;
     private JPanel newSensorPanel;
 
@@ -66,7 +70,7 @@ public class SensorPanel extends JPanel {
      * will display in the order that they are created.
      * @param p The Panel to populate with the current list of sensors
      */
-    private void updateSensorList(JPanel p) {
+    public void updateSensorList(JPanel p) {
         p.removeAll();
         securityService.getSensors().stream().sorted().forEach(s -> {
             JLabel sensorLabel = new JLabel(String.format("%s(%s): %s", s.getName(),  s.getSensorType().toString(),(s.getActive() ? "Active" : "Inactive")));

@@ -34,7 +34,7 @@ class SecurityServiceTest {
 
     private Set<Sensor> allSensors = new HashSet<>();
 
-    BufferedImage bufferedImage = ImageIO.read(new File("D:\\Development\\Java\\catpoint-parent\\sample-cat.jpg"));
+    BufferedImage bufferedImage = ImageIO.read(new File("..\\sample-cat.jpg"));
 
     @Mock
     private SecurityRepository securityRepository;
@@ -64,6 +64,7 @@ class SecurityServiceTest {
     public void test_1_ifAlarmArmedAndSensorActivated_putSystemIntoPendingAlarmStatus (ArmingStatus armingStatus) {
         Mockito.when(securityRepository.getArmingStatus()).thenReturn(armingStatus);
         Mockito.when(securityRepository.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
+
         securityService.changeSensorActivationStatus(sensor, true);
 
         Mockito.verify(securityRepository).setAlarmStatus(AlarmStatus.PENDING_ALARM);
@@ -75,6 +76,7 @@ class SecurityServiceTest {
     public void test_2_ifAlarmArmedAndSensorActivatedAndAlreadyPendingAlarm_putSystemIntoAlarmStatus (ArmingStatus armingStatus) {
         Mockito.when(securityRepository.getArmingStatus()).thenReturn(armingStatus);
         Mockito.when(securityRepository.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+
         securityService.changeSensorActivationStatus(sensor, true);
 
         Mockito.verify(securityRepository).setAlarmStatus(AlarmStatus.ALARM);
@@ -85,6 +87,7 @@ class SecurityServiceTest {
     @Test
     public void test_3_ifPendingAlarmAndAllSensorsInactive_putSystemIntoNoAlarmStatus () {
         Mockito.when(securityRepository.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+
         sensor.setActive(true);
         securityService.changeSensorActivationStatus(sensor, false);
         Mockito.verify(securityRepository).setAlarmStatus(AlarmStatus.NO_ALARM);
@@ -94,6 +97,7 @@ class SecurityServiceTest {
     @Test
     public void test_4_ifAlarmActiveAndChangeSensorState_KeepAlarmState () {
         Mockito.when(securityRepository.getAlarmStatus()).thenReturn(AlarmStatus.ALARM);
+
         securityService.changeSensorActivationStatus(sensor, true);
         securityService.changeSensorActivationStatus(sensor, false);
 
@@ -105,6 +109,7 @@ class SecurityServiceTest {
     public void test_5_ifSensorActivatedWhileAlreadyActiveAndAlarmPendingState_putSystemIntoAlarmStatus () {
         sensor.setActive(true);
         Mockito.when(securityRepository.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+
         securityService.changeSensorActivationStatus(sensor, true);
         Mockito.verify(securityRepository).setAlarmStatus(AlarmStatus.ALARM);
     }
@@ -130,12 +135,16 @@ class SecurityServiceTest {
 
     // 8. If the image service identifies an image that does not contain a cat, change the status to no alarm as long as the sensors are not active
     @Test
-    public void test_8_ifImageDoesNotContainCatAndSensorsNotActiveAlarmArmedAndSensorActivated_putSystemIntoNoAlarmStatus () {
-        //Mockito.when(securityRepository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+    public void test_8_ifImageDoesNotContainCatAndSensorsNotActive_putSystemIntoNoAlarmStatus () {
         Mockito.when(imageService.imageContainsCat(Mockito.any(BufferedImage.class),Mockito.anyFloat())).thenReturn(false);
+        Mockito.when(securityRepository.getSensors()).thenReturn(allSensors);
+
+        sensor.setActive(true);
+        securityService.processImage(bufferedImage);
+        Mockito.verify(securityRepository,Mockito.never()).setAlarmStatus(Mockito.any(AlarmStatus.class));
+
         sensor.setActive(false);
         securityService.processImage(bufferedImage);
-
         Mockito.verify(securityRepository).setAlarmStatus(AlarmStatus.NO_ALARM);
     }
 
@@ -145,6 +154,7 @@ class SecurityServiceTest {
     public void test_9_ifSystemIsDisarmed_putSystemIntoNoAlarmStatus () {
         securityService.setArmingStatus(ArmingStatus.DISARMED);
         Mockito.verify(securityRepository).setAlarmStatus(AlarmStatus.NO_ALARM);
+
     }
 
     // 10. If the system is armed, reset all sensors to inactive

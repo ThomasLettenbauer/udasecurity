@@ -8,10 +8,9 @@ import com.udacity.security.data.SecurityRepository;
 import com.udacity.security.data.Sensor;
 
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+
+import static com.udacity.security.data.AlarmStatus.PENDING_ALARM;
 
 /**
  * Service that receives information about changes to the security system. Responsible for
@@ -25,6 +24,8 @@ public class SecurityService {
     private ImageService imageService;
     private SecurityRepository securityRepository;
     private Set<StatusListener> statusListeners = new HashSet<>();
+
+    private boolean iHaveSeenACat;
 
     public SecurityService(SecurityRepository securityRepository, ImageService imageService) {
         this.securityRepository = securityRepository;
@@ -40,14 +41,17 @@ public class SecurityService {
         if(armingStatus == ArmingStatus.DISARMED) {
             setAlarmStatus(AlarmStatus.NO_ALARM);
         } else if (armingStatus == ArmingStatus.ARMED_AWAY || armingStatus == ArmingStatus.ARMED_HOME) {
-            Set<Sensor> allSensors = getSensors();
-            // inactivate all sensors
 
-            for (Iterator<Sensor> sensorIterator = allSensors.iterator(); sensorIterator.hasNext();) {
-                Sensor sensor = sensorIterator.next();
-                sensor.setActive(false);
-                }
+            System.out.println("System gets armed");
+            List<Sensor> sensors = new ArrayList<>(getSensors());
+            for (int i=0; i< sensors.size(); i++) {
+                changeSensorActivationStatus(sensors.get(i), false);
             }
+            }
+
+        if (armingStatus == ArmingStatus.ARMED_HOME && iHaveSeenACat) {
+            setAlarmStatus(AlarmStatus.ALARM);
+        }
 
         securityRepository.setArmingStatus(armingStatus);
 
@@ -61,7 +65,7 @@ public class SecurityService {
     private void catDetected(Boolean cat) {
         if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME) {
             setAlarmStatus(AlarmStatus.ALARM);
-        } else {
+        } else if (getSensors().stream().noneMatch(Sensor::getActive)){ // no sensor must be active
             setAlarmStatus(AlarmStatus.NO_ALARM);
         }
 
@@ -97,7 +101,7 @@ public class SecurityService {
             return; //no problem if the system is disarmed
         }
         switch(securityRepository.getAlarmStatus()) {
-            case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
+            case NO_ALARM -> setAlarmStatus(PENDING_ALARM);
             case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
         }
     }
@@ -106,9 +110,12 @@ public class SecurityService {
      * Internal method for updating the alarm status when a sensor has been deactivated
      */
     private void handleSensorDeactivated() {
-        switch(securityRepository.getAlarmStatus()) {
-            case PENDING_ALARM -> setAlarmStatus(AlarmStatus.NO_ALARM);
-            //case ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
+        if (securityRepository.getArmingStatus() == ArmingStatus.DISARMED){
+            return;
+        }
+
+        if (securityRepository.getAlarmStatus() == PENDING_ALARM) {
+            setAlarmStatus(AlarmStatus.NO_ALARM);
         }
     }
 
@@ -135,7 +142,8 @@ public class SecurityService {
      * @param currentCameraImage
      */
     public void processImage(BufferedImage currentCameraImage) {
-        catDetected(imageService.imageContainsCat(currentCameraImage, 50.0f));
+        iHaveSeenACat = imageService.imageContainsCat(currentCameraImage, 50.0f);
+        catDetected(iHaveSeenACat);
     }
 
     public AlarmStatus getAlarmStatus() {
