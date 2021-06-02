@@ -34,7 +34,7 @@ class SecurityServiceTest {
 
     private Set<Sensor> allSensors = new HashSet<>();
 
-    BufferedImage bufferedImage = ImageIO.read(new File("..\\sample-cat.jpg"));
+    BufferedImage bufferedImage = new BufferedImage(240, 240, BufferedImage.TYPE_INT_ARGB);
 
     @Mock
     private SecurityRepository securityRepository;
@@ -202,9 +202,33 @@ class SecurityServiceTest {
         Mockito.verify(securityRepository, Mockito.never()).setAlarmStatus(Mockito.any(AlarmStatus.class));
     }
 
+    // Coverage 4. Remove StatusListener
     @Test
     public void cov_4_removeStatusListener () {
         securityService.removeStatusListener(statusListener);
     }
+
+    // Coverage 5. Armed Home and seeing a cat
+    @Test
+    public void cov_5_armingStatusArmedHomeAndCat_setAlarm () {
+       Mockito.when(securityRepository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+       Mockito.when(imageService.imageContainsCat(Mockito.any(BufferedImage.class),Mockito.anyFloat())).thenReturn(true);
+
+       securityService.processImage(bufferedImage);
+       securityService.setArmingStatus(ArmingStatus.ARMED_HOME);
+
+       Mockito.verify(securityRepository, Mockito.times(2)).setAlarmStatus(AlarmStatus.ALARM);
+    }
+
+    // Coverage 6. Sensor gets deactivated while system is disarmed
+    @Test
+    public void cov_6_sensorDeactivatedWhileDisarmed_doNothing () {
+        Mockito.when(securityRepository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+        sensor.setActive(true);
+        securityService.changeSensorActivationStatus(sensor, false);
+
+        Mockito.verify(securityRepository, Mockito.never()).setAlarmStatus(Mockito.any(AlarmStatus.class));
+    }
+
 
 }
