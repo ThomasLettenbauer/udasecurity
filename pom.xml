@@ -7,7 +7,7 @@
   <groupId>com.udacity.catpoint</groupId>
   <artifactId>catpoint-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <modules>
     <module>security-module</module>
     <module>image-module</module>
