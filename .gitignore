@@ -1,4 +1,6 @@
 # Project exclude paths
 /target/
+/image-module/target/
+/security-module/target/
 /.idea/
 catpoint-parent.iml
